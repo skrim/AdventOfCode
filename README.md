@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-07 | [Rebol3](http://www.rebol.com/r3/docs/index.html) | `./program.r` |
 | 2021-12-06 | Microsoft Sql | paste into query window and hit Execute |
 | 2021-12-05 | [Mumps](https://www.cs.uni.edu/~okane/) | `./program.mps` |
 | 2021-12-04 | Erlang | `erlc program.erl && erl -s program` |
