@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-10 | ARM64 Assembler | `run.sh` |
 | 2021-12-09 | Raku | `rakudo program.raku` |
 | 2021-12-08 | Dart | `dart program.dart` |
 | 2021-12-07 | [Rebol3](http://www.rebol.com/r3/docs/index.html) | `./program.r` |
