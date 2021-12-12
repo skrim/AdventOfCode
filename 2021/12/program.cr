@@ -1,4 +1,3 @@
-
 class Node
     def initialize(name : String)
         @name = name
@@ -55,28 +54,26 @@ File.each_line("input.txt") do | line |
 end
 
 def traverse(current : Node, finalTarget : Node, path : Array, visitCountOnPath : Int)
-    routes = 0
+    completedRoutes = 0
     path << current
     current.visit(1)
     first = true
     current.@connections.each do | target |
         if target == finalTarget
             if visitCountOnPath == 0 || path.count { |p| p.@maxVisits == visitCountOnPath }
-                routes = routes + 1
+                completedRoutes = completedRoutes + 1
             end
             next
         end
 
-        if !target.allow()
-            next
+        if target.allow()
+            completedRoutes = completedRoutes + traverse(target, finalTarget, path, visitCountOnPath)
         end
-
-        routes = routes + traverse(target, finalTarget, path, visitCountOnPath)
     end
     path.pop()
     current.visit(-1)
 
-    routes
+    completedRoutes
 end
 
 startNode = nodes["start"]
