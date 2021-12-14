@@ -9,7 +9,7 @@ var rules = [String: String]()
 for line in lines {
     let tokens = line.split(separator: " ")
     if (tokens.count == 3) {
-        rules[ String(tokens[0]) ] = String(tokens[2]);
+        rules[ String(tokens[0]) ] = String(tokens[2])
     }
 }
 
@@ -19,7 +19,7 @@ var current = [String: Int]()
 
 for pos in 0...initialization.count - 2 {
     let segment = String(initialization.prefix(pos + 2).suffix(2))
-    current[segment] = (current[segment] ?? 0) + 1;
+    current[segment] = (current[segment] ?? 0) + 1
 }
 
 for i in 0...39 {
@@ -31,8 +31,8 @@ for i in 0...39 {
         let r = rules[key]!;
         let l = String(key.suffix(1))
 
-        next[f + r] = (next[f + r] ?? 0) + value;
-        next[r + l] = (next[r + l] ?? 0) + value;
+        next[f + r] = (next[f + r] ?? 0) + value
+        next[r + l] = (next[r + l] ?? 0) + value
 
         characterCounts[f] = (characterCounts[f] ?? 0) + value
         characterCounts[r] = (characterCounts[r] ?? 0) + value
