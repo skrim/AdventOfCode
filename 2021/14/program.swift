@@ -14,6 +14,7 @@ for line in lines {
 }
 
 var initialization = String(lines[0])
+let last = String(initialization.suffix(1))
 var current = [String: Int]()
 
 for pos in 0...initialization.count - 2 {
@@ -26,21 +27,16 @@ for i in 0...39 {
     var characterCounts = [String: Int]()
 
     for (key, value) in current {
-        let r = rules[key]!;
-
         let f = String(key.prefix(1))
+        let r = rules[key]!;
         let l = String(key.suffix(1))
 
-        let first = f + r
-        next[first] = (next[first] ?? 0) + value;
-
-        let second = r + l
-        next[second] = (next[second] ?? 0) + value;
+        next[f + r] = (next[f + r] ?? 0) + value;
+        next[r + l] = (next[r + l] ?? 0) + value;
 
         characterCounts[f] = (characterCounts[f] ?? 0) + value
         characterCounts[r] = (characterCounts[r] ?? 0) + value
     }
-    let last = String(initialization.suffix(1))
     characterCounts[last] = (characterCounts[last] ?? 0) + 1
 
     if (i == 9 || i == 39) {
