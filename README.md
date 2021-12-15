@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-15 | Ada | `gnatmake program.adb && ./program` |
 | 2021-12-14 | Swift | `./program.swift` |
 | 2021-12-13 | Excel | [Here](https://1drv.ms/x/s!Am0A-Q2ssMvKv0E76ZuK2UPIBImY?e=ZpjLRK) |
 | 2021-12-12 | Crystal | `crystal program.cr` |
