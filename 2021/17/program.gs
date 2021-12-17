@@ -4,38 +4,31 @@ init
 	var y1 = -134
 	var y2 = -79
 
-	var maxApogee = -9999999
 	var hitCount = 0
 
-	for var vx = 1 to x2
-		for var vy = y1 to 500
+	for var vx = 1 to (x2 + 1)
+		for var vy = (y1 + 1) to (-y1 + 1)
 			var hit = false
-			var apogee = -9999999
 			var tx = 0
 			var ty = 0
 
 			var n = 0
 			while true
-				n = n + 1
-				if (n < vx)
-					tx = tx + (vx - n)
+				n++
+				if n < vx
+					tx += vx - n
 
-				ty = ty + vy - n
+				ty += vy - n
 
-				if ty > apogee
-					apogee = ty
-
-				if ty < y1 || tx > x2
+				if tx > x2 || ty < y1
 					break
 
-				if tx >= x1 && tx <= x2 && ty >= y1 && ty <= y2
+				if tx >= x1 && ty <= y2
 					hit = true
 					break
 
-			if hit 
+			if hit
 				hitCount++
-				if apogee > maxApogee
-					maxApogee = apogee
-						
-	print "Part 1: %d", maxApogee
+
+	print "Part 1: %d", y1 * (y1 + 1) / 2
 	print "Part 2: %d", hitCount
