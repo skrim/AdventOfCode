@@ -4,7 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
-| 2021-12-16 | Genie | `valac program.gs && ./program` |
+| 2021-12-17 | Genie | `valac program.gs && ./program` |
 | 2021-12-16 | Lua | `lua program.lua` |
 | 2021-12-15 | Ada | `gnatmake program.adb && ./program` |
 | 2021-12-14 | Swift | `./program.swift` |
