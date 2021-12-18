@@ -2,3 +2,6 @@
 bin
 obj
 *.beam
+*.o
+*.ali
+program
