@@ -4,26 +4,29 @@ mutable struct Snailfish
     left::Union{Snailfish, Nothing}
     right::Union{Snailfish, Nothing}
     value::Union{Int, Nothing}
+
+    Snailfish(parent, depth; left = nothing, right = nothing, value = nothing) = new(parent, depth, left, right, value)
 end
-Base.show(io::IO, z::Snailfish) = if (z.value == nothing) print(io, "[", z.left, ",", z.right, "]") else print(io, z.value) end
+
+Base.show(io::IO, node::Snailfish) = if (hasValue(node)) print(io, node.value) else print(io, "[", node.left, ",", node.right, "]") end
 
 hasValue(node::Snailfish) = isa(node.value, Number)
 
 splitCondition(node::Snailfish) = hasValue(node) && node.value >= 10
-
 explodeCondition(node::Snailfish) = node.depth > 4 && !hasValue(node) && hasValue(node.left) && hasValue(node.right)
 
-magnitude(node::Snailfish) = hasValue(node) ? node.value : magnitude(node.left) * 3 + magnitude(node.right) * 2
+function setContents(node::Snailfish, left::Union{Snailfish, Nothing}, right::Union{Snailfish, Nothing}, value::Union{Int, Nothing})
+    node.left, node.right, node.value = left, right, value
+end
 
-function parseSnailfish(input::String)
+function parseSnailfish(input::String) :: Snailfish
     nesting = 1
-    current = root = Snailfish(nothing, nesting, nothing, nothing, nothing)
+    current = root = Snailfish(nothing, nesting)
 
     for token in collect(m.match for m = eachmatch(r"[\[\]\,\d]", input))
         if token == "["
             nesting = nesting + 1
-            current.left = Snailfish(current, nesting, nothing, nothing, nothing)
-            current.right = Snailfish(current, nesting, nothing, nothing, nothing)
+            setContents(current, Snailfish(current, nesting), Snailfish(current, nesting), nothing)
             current = current.left
         elseif token == ","
             current = current.parent.right
@@ -34,19 +37,19 @@ function parseSnailfish(input::String)
             current.value = parse(Int, token)
         end
     end
-    return root
+    root
 end
 
-function getDepthFirstList(result::Array, node::Snailfish)
+function getDepthFirstList(result::Array{Snailfish}, node::Snailfish) :: Array{Snailfish}
     push!(result, node)
     node.left != nothing && getDepthFirstList(result, node.left)
     node.right != nothing && getDepthFirstList(result, node.right)
-    return result
+    result
 end
 
-getDepthFirstList(node::Snailfish) = getDepthFirstList([], node)
+getDepthFirstList(node::Snailfish) :: Array{Snailfish} = getDepthFirstList(Array{Snailfish, 1}(), node)
 
-function explode(root::Snailfish)
+function explode(root::Snailfish) :: Bool
     flat = getDepthFirstList(root)
     for i = 1 : length(flat)
         node = flat[i]
@@ -60,21 +63,20 @@ function explode(root::Snailfish)
             nd.value = nd.value + node.right.value
             break
         end
-        node.left = node.right = nothing
-        node.value = 0
+        setContents(node, nothing, nothing, 0)
         return true
     end
-    return false
+    false
 end
 
-function splitValue(root::Snailfish)
+function splitValue(root::Snailfish) :: Bool
+    createChild(node::Snailfish, value::Int) = Snailfish(node, node.depth + 1; value = value)
+
     for node in filter(splitCondition, getDepthFirstList(root))
-        node.left = Snailfish(node, node.depth + 1, nothing, nothing, floor(Int, node.value / 2))
-        node.right = Snailfish(node, node.depth + 1, nothing, nothing, ceil(Int, node.value / 2))
-        node.value = nothing
+        setContents(node, createChild(node, floor(Int, node.value / 2)), createChild(node, ceil(Int, node.value / 2)), nothing)
         return true
     end
-    return false
+    false
 end
 
 function reduce(node::Snailfish)
@@ -83,18 +85,16 @@ function reduce(node::Snailfish)
     end
 end
 
-function add(first::Snailfish, second::Snailfish)
+function add(first::Snailfish, second::Snailfish) :: Snailfish
     for n in [getDepthFirstList(first); getDepthFirstList(second)]
         n.depth = n.depth + 1
     end
-
-    result = Snailfish(nothing, 1, first, second, nothing)
-    first.parent = result
-    second.parent = result
-    return result
+    first.parent = second.parent = Snailfish(nothing, 1; left = first, right = second)
 end
 
 function run()
+    magnitude(node::Snailfish) = hasValue(node) ? node.value : magnitude(node.left) * 3 + magnitude(node.right) * 2
+
     lines = readlines("input.txt")
 
     current = parseSnailfish(lines[1])
@@ -105,10 +105,10 @@ function run()
     println("Part 1: ", magnitude(current))
 
     maxMagnitude = 0
-    for a = 1 : length(lines), b = 1 : length(lines)
-        a == b && continue;
+    for a in lines, b in lines
+        a == b && continue
 
-        sum = add(parseSnailfish(lines[a]), parseSnailfish(lines[b]))
+        sum = add(parseSnailfish(a), parseSnailfish(b))
         reduce(sum)
         maxMagnitude = max(maxMagnitude, magnitude(sum))
     end
