@@ -30,8 +30,8 @@ int main() {
         int count = 0;
         forYX {
             bool value = transform[ read(x - 1, y - 1, 8) | read(x, y - 1, 7) | read(x + 1, y - 1, 6) |
-                                                  read(x - 1, y    , 5) | read(x, y    , 4) | read(x + 1, y    , 3) |
-                                                  read(x - 1, y + 1, 2) | read(x, y + 1, 1) | read(x + 1, y + 1, 0)   ];
+                                    read(x - 1, y    , 5) | read(x, y    , 4) | read(x + 1, y    , 3) |
+                                    read(x - 1, y + 1, 2) | read(x, y + 1, 1) | read(x + 1, y + 1, 0)   ];
             image[x][y][(i + 1) % 2] = value;
             if (x >= ITERATIONS && y >= ITERATIONS && x <= CANVAS - ITERATIONS && y <= CANVAS - ITERATIONS && value) count++;
         }
