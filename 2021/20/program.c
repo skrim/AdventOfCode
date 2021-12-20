@@ -27,17 +27,15 @@ int main() {
     fclose(fp);
 
     for (int i = 0; i < ITERATIONS; i++) {
+        int count = 0;
         forYX {
-            image[x][y][(i + 1) % 2] = transform[ read(x - 1, y - 1, 8) | read(x, y - 1, 7) | read(x + 1, y - 1, 6) |
+            bool value = transform[ read(x - 1, y - 1, 8) | read(x, y - 1, 7) | read(x + 1, y - 1, 6) |
                                                   read(x - 1, y    , 5) | read(x, y    , 4) | read(x + 1, y    , 3) |
                                                   read(x - 1, y + 1, 2) | read(x, y + 1, 1) | read(x + 1, y + 1, 0)   ];
+            image[x][y][(i + 1) % 2] = value;
+            if (x >= ITERATIONS && y >= ITERATIONS && x <= CANVAS - ITERATIONS && y <= CANVAS - ITERATIONS && value) count++;
         }
-
-        if (i == 1 || i == 49) {
-            int count = 0;
-            forYX count += x >= ITERATIONS && y >= ITERATIONS && x <= CANVAS - ITERATIONS && y <= CANVAS - ITERATIONS && image[x][y][(i + 1) % 2];
-            printf("Part %d: %d\n", i == 1 ? 1 : 2, count);
-        }
+        if (i == 1 || i == 49) printf("Part %d: %d\n", i == 1 ? 1 : 2, count);
     }
     return 0;
 }
