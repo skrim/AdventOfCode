@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-20 | C | `gcc program.c -o program && ./program` |
 | 2021-12-19 | Kotlin | `kotlinc program.kt -include-runtime -d program.jar && java -jar program.jar` |
 | 2021-12-18 | Julia | `julia program.jl` |
 | 2021-12-17 | Genie | `valac program.gs && ./program` |
