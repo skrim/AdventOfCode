@@ -9,8 +9,7 @@
 #define forYX for (int y = 0; y < CANVAS; y++) for (int x = 0; x < CANVAS; x++)
 
 int main() {
-    bool transform[MAPPING];
-    bool image[CANVAS][CANVAS][2];
+    bool transform[MAPPING], image[CANVAS][CANVAS][2];
 
     forYX image[x][y][0] = false;
 
