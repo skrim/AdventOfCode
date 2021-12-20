@@ -5,7 +5,7 @@
 #define MAPPING 512
 #define CANVAS 300
 #define ITERATIONS 50
-#define read(i, x, y, p) ((x >= 0 && x < CANVAS && y >= 0 && y < CANVAS && image[x][y][i % 2]) << p)
+#define read(x, y, p) ((x >= 0 && x < CANVAS && y >= 0 && y < CANVAS && image[x][y][i % 2]) << p)
 #define forYX for (int y = 0; y < CANVAS; y++) for (int x = 0; x < CANVAS; x++)
 
 int main() {
@@ -28,9 +28,9 @@ int main() {
 
     for (int i = 0; i < ITERATIONS; i++) {
         forYX {
-            image[x][y][(i + 1) % 2] = transform[ read(i, x - 1, y - 1, 8) | read(i, x, y - 1, 7) | read(i, x + 1, y - 1, 6) |
-                                                  read(i, x - 1, y    , 5) | read(i, x, y    , 4) | read(i, x + 1, y    , 3) |
-                                                  read(i, x - 1, y + 1, 2) | read(i, x, y + 1, 1) | read(i, x + 1, y + 1, 0)   ];
+            image[x][y][(i + 1) % 2] = transform[ read(x - 1, y - 1, 8) | read(x, y - 1, 7) | read(x + 1, y - 1, 6) |
+                                                  read(x - 1, y    , 5) | read(x, y    , 4) | read(x + 1, y    , 3) |
+                                                  read(x - 1, y + 1, 2) | read(x, y + 1, 1) | read(x + 1, y + 1, 0)   ];
         }
 
         if (i == 1 || i == 49) {
