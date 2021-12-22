@@ -77,9 +77,7 @@ long calculate(Area[] areas, Area subset) {
         }
         result ~= incoming;
     }
-    long count = 0;
-    foreach (area; result.filter!(a => a.state)) count += area.volume();
-    return count;
+    return sum(result.filter!(a => a.state).map!(a => a.volume()));
 }
 
 void main() {
@@ -89,7 +87,6 @@ void main() {
         foreach(m; matchAll(line, regex(r"(\-?\d+)"))) vals ~= to!int(m.hit);
         areas ~= new Area(startsWith(line, "on"), vals[0], vals[1], vals[2], vals[3], vals[4], vals[5]);
     }
-
     writefln("Part 1: %d", calculate(areas, new Area(false, -50, 50, -50, 50, -50, 50)));
     writefln("Part 2: %d", calculate(areas, null));
 }
