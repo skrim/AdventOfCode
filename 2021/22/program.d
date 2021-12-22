@@ -74,9 +74,9 @@ long calculate(Area[] areas, Area subset) {
             }
             result = result.remove(i) ~ existing.subtract(incoming);
         }
-        result ~= incoming;
+        if (incoming.state) result ~= incoming;
     }
-    return sum(result.filter!(a => a.state).map!(a => a.volume()));
+    return sum(result.map!(a => a.volume()));
 }
 
 void main() {
