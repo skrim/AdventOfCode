@@ -72,8 +72,7 @@ long calculate(Area[] areas, Area subset) {
                 i++;
                 continue;
             }
-            result = result.remove(i);
-            foreach (part; existing.subtract(incoming)) result ~= part;
+            result = result.remove(i) ~ existing.subtract(incoming);
         }
         result ~= incoming;
     }
