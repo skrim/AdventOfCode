@@ -2,14 +2,13 @@
 , dependencies =
   [ "arrays"
   , "console"
-  , "debug"
   , "effect"
   , "foldable-traversable"
   , "integers"
-  , "math"
   , "maybe"
   , "prelude"
   , "psci-support"
+  , "strings"
   ]
 , packages = ./packages.dhall
 , sources = [ "**/*.purs" ]
