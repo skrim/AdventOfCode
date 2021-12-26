@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-23 | Go | `go run .` |
 | 2021-12-22 | D | `rdmd -preview=shortenedMethods program.d` |
 | 2021-12-21 | PureScript | `spago run` |
 | 2021-12-20 | C | `gcc program.c -o program && ./program` |
