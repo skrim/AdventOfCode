@@ -4,6 +4,7 @@
 
 | Date | Language/Tool | Run with |
 |-|-|-|
+| 2021-12-24 | C++ | `g++ -std=c++2a program.cpp -o program && ./program` |
 | 2021-12-23 | Go | `go run .` |
 | 2021-12-22 | D | `rdmd -preview=shortenedMethods program.d` |
 | 2021-12-21 | PureScript | `spago run` |
