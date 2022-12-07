@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net7.0</TargetFramework>
+    <RootNamespace>_2022</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="IAdventOfCodeTask.fs" />
+    <Compile Include="Task20221201.fs" />
+    <Compile Include="Task20221202.fs" />
+    <Compile Include="Task20221203.fs" />
+    <Compile Include="Task20221204.fs" />
+    <Compile Include="Task20221205.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+</Project>
