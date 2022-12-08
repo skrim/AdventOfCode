@@ -2,6 +2,12 @@
 
 [Advent of Code](https://adventofcode.com/) participations
 
+## 2022
+
+It is all F#
+
+## 2021
+
 | Date | Language/Tool | Run with |
 |-|-|-|
 | 2021-12-25 | Fortran | `gfortran program.f90 -o program && ./program` |
