@@ -13,10 +13,10 @@ type Task20221208 () =
                 |> Array.map(fun f -> f |> Seq.map (fun v -> (v |> int32) - 48) |> Seq.toArray)
 
             let forAllDirections x y functionCall aggregator =
-                let leftPart x y = grid[y].[0 .. x - 1] |> Array.rev
-                let rightPart x y = grid[y].[x + 1 .. width - 1]
-                let topPart x y = grid[0 .. y - 1] |> Array.map(fun col -> col[x]) |> Array.rev
-                let bottomPart x y = grid[y + 1 .. height - 1] |> Array.map(fun col -> col[x])
+                let leftPart x y = grid[y].[.. x - 1] |> Array.rev
+                let rightPart x y = grid[y].[x + 1 ..]
+                let topPart x y = grid[.. y - 1] |> Array.map(fun col -> col[x]) |> Array.rev
+                let bottomPart x y = grid[y + 1 ..] |> Array.map(fun col -> col[x])
 
                 let callback dirPart = dirPart x y |> functionCall grid[y].[x]
                 ( (callback leftPart, callback rightPart) ||> aggregator, (callback topPart, callback bottomPart) ||> aggregator ) ||> aggregator
