@@ -16,9 +16,9 @@ type Task20221209 () =
 
                 let followPrevious next previous =
                     match previous with
-                    | _ when next = previous -> next
                     | _ when next > previous -> next - 1
-                    | _ -> next + 1
+                    | _ when next < previous -> next + 1
+                    | _ -> next
 
                 let move direction segment =
                     match direction with
@@ -31,12 +31,12 @@ type Task20221209 () =
                 let (_, positions) =
                     moves
                     |> Seq.fold(fun state (direction, count) ->
-                        [| 1..count |]
-                        |> Array.fold(fun (rope, positions:Set<int*int>) _ ->
+                        { 1..count }
+                        |> Seq.fold(fun (rope, tailPositions:Set<int*int>) _ ->
 
                             let newHead = rope |> Array.head |> move direction
 
-                            let newRope =
+                            let (_, newRope) =
                                 rope
                                 |> Array.tail
                                 |> Array.fold(fun (previous, newRope) next  ->
@@ -48,9 +48,8 @@ type Task20221209 () =
 
                                     (newSegment, Array.append newRope [| newSegment |])
                                 ) (newHead, [| newHead |])
-                                |> snd
 
-                            (newRope, positions.Add(newRope |> Array.rev |> Array.head))
+                            (newRope, tailPositions.Add(newRope |> Array.rev |> Array.head))
                         ) state
                     ) (Array.create length (0, 0), Set.empty)
 

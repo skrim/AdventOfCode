@@ -14,7 +14,7 @@ type Task20221204 () =
                 |> Array.map (fun f -> (f[0], f[1]))
 
             let filter1 (a, b) =
-                match (a, b) with
+                match a, b with
                 | (a1, a2), (b1, b2) when a1 >= b1 && a2 <= b2 -> true
                 | (a1, a2), (b1, b2) when a1 <= b1 && a2 >= b2 -> true
                 | _ -> false
