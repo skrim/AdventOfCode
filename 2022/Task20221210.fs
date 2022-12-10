@@ -35,9 +35,7 @@ type Task20221210 () =
                 ) (List.empty, 0)
                 |> fst |> List.rev
 
-            let calculateStrength index = index * states[index - 2]
-
-            let part1 = {20..40..220} |> Seq.map calculateStrength |> Seq.sum
+            let part1 = {20..40..220} |> Seq.map(fun index -> index * states[index - 2]) |> Seq.sum
             let part2 = formatOutput pixels
 
             (part1, part2)

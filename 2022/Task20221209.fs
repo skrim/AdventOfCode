@@ -13,45 +13,41 @@ type Task20221209 () =
                 )
 
             let pullRope length =
+                let moveSegment (previous, newRope) next =
+                    let followPrevious op =
+                        let n = op next
+                        match op previous with
+                        | p when n > p -> n - 1
+                        | p when n < p -> n + 1
+                        | _ -> n
 
-                let followPrevious next previous =
-                    match previous with
-                    | _ when next > previous -> next - 1
-                    | _ when next < previous -> next + 1
-                    | _ -> next
+                    let needsMove op = abs (op next - op previous) > 1
 
-                let move direction segment =
-                    match direction with
-                    | "U" -> (fst segment, snd segment + 1)
-                    | "D" -> (fst segment, snd segment - 1)
-                    | "L" -> (fst segment - 1, snd segment)
-                    | "R" -> (fst segment + 1, snd segment)
-                    | _ -> raise <| new InvalidOperationException()
+                    let newSegment = if needsMove fst || needsMove snd then (followPrevious fst, followPrevious snd) else next
+
+                    (newSegment, newSegment :: newRope)
 
                 let (_, positions) =
                     moves
                     |> Seq.fold(fun state (direction, count) ->
                         { 1..count }
                         |> Seq.fold(fun (rope, tailPositions:Set<int*int>) _ ->
+                            match rope with
+                            | head :: tail ->
+                                let newHead =
+                                    match direction with
+                                    | "U" -> (fst head, snd head + 1)
+                                    | "D" -> (fst head, snd head - 1)
+                                    | "L" -> (fst head - 1, snd head)
+                                    | "R" -> (fst head + 1, snd head)
+                                    | _ -> raise <| new InvalidOperationException()
 
-                            let newHead = rope |> Array.head |> move direction
+                                let (_, newRope) = tail |> List.fold moveSegment (newHead, [ newHead ])
+                                (newRope |> List.rev, tailPositions.Add(newRope |> List.head))
+                            | _ -> raise <| new InvalidOperationException()
 
-                            let (_, newRope) =
-                                rope
-                                |> Array.tail
-                                |> Array.fold(fun (previous, newRope) next  ->
-                                    let newSegment =
-                                        if abs (fst next - fst previous) > 1 || abs (snd next - snd previous) > 1 then
-                                            (followPrevious (fst next) (fst previous), followPrevious (snd next) (snd previous))
-                                        else
-                                            next
-
-                                    (newSegment, Array.append newRope [| newSegment |])
-                                ) (newHead, [| newHead |])
-
-                            (newRope, tailPositions.Add(newRope |> Array.rev |> Array.head))
                         ) state
-                    ) (Array.create length (0, 0), Set.empty)
+                    ) (Array.create length (0, 0) |> Array.toList, Set.empty)
 
                 positions |> Set.count
 

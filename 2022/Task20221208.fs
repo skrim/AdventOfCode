@@ -13,19 +13,22 @@ type Task20221208 () =
                 |> Array.map(fun f -> f |> Seq.map (fun v -> (v |> int32) - 48) |> Seq.toArray)
 
             let forAllDirections x y functionCall aggregator =
-                let leftPart x y = grid[y].[.. x - 1] |> Array.rev
-                let rightPart x y = grid[y].[x + 1 ..]
-                let topPart x y = grid[.. y - 1] |> Array.map(fun col -> col[x]) |> Array.rev
-                let bottomPart x y = grid[y + 1 ..] |> Array.map(fun col -> col[x])
-
+                let partials = [
+                    fun x y -> seq { for i in x - 1 .. -1 ..    0 do yield grid[y].[i] };
+                    fun x y -> seq { for i in x + 1 ..  width - 1 do yield grid[y].[i] };
+                    fun x y -> seq { for i in y - 1 .. -1 ..    0 do yield grid[i].[x] };
+                    fun x y -> seq { for i in y + 1 .. height - 1 do yield grid[i].[x] }
+                ]
                 let callback dirPart = dirPart x y |> functionCall grid[y].[x]
-                ( (callback leftPart, callback rightPart) ||> aggregator, (callback topPart, callback bottomPart) ||> aggregator ) ||> aggregator
 
-            let isVisible tree others = others |> Array.filter(fun h -> h >= tree) |> Array.isEmpty
+                List.tail partials
+                |> List.fold(fun state value -> aggregator state (value |> callback) ) (List.head partials |> callback)
+
+            let isVisible tree others = others |> Seq.filter(fun h -> h >= tree) |> Seq.isEmpty
 
             let directionScore tree others =
                 others |>
-                Array.fold(fun state current ->
+                Seq.fold(fun state current ->
                     match state with
                     | (_, true) -> state
                     | (score, false) when current >= tree -> (score + 1, true)
@@ -39,7 +42,7 @@ type Task20221208 () =
                     [| 0 .. height - 1 |]
                     |> Array.map(fun y ->
                         let visible = forAllDirections x y isVisible (||)
-                        let score = forAllDirections x y directionScore (*)
+                        let score = if visible then forAllDirections x y directionScore (*) else 0
 
                         (visible, score)
                     )

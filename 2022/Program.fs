@@ -8,8 +8,8 @@ open System.Reflection
 type Program () =
     static let getInstances types =
         types
-        |> Array.map (fun t -> Activator.CreateInstance t)
-        |> Array.map (fun t -> t :?> IAdventOfCodeTask)
+        |> List.map (fun t -> Activator.CreateInstance t)
+        |> List.map (fun t -> t :?> IAdventOfCodeTask)
 
     [<EntryPoint>]
     static let main args =
@@ -20,15 +20,16 @@ type Program () =
 
         let types =
             Assembly.GetCallingAssembly().GetTypes()
-            |> Array.filter (fun t -> typedefof<IAdventOfCodeTask>.IsAssignableFrom t)
-            |> Array.filter (fun t -> not t.IsInterface)
-            |> Array.sortBy (fun t -> t.Name)
+            |> Array.toList
+            |> List.filter (fun t -> typedefof<IAdventOfCodeTask>.IsAssignableFrom t)
+            |> List.filter (fun t -> not t.IsInterface)
+            |> List.sortBy (fun t -> t.Name)
 
-        printfn "Solving %d tasks..." (Array.length types)
+        printfn "Solving %d tasks..." (List.length types)
 
-        let answers =
+        let results =
             getInstances types
-            |> Array.map (fun x ->
+            |> List.map (fun x ->
                 let taskType = x.GetType()
                 let taskName = taskType.Name
                 let input = System.IO.File.ReadAllLines(Path.Join("data", sprintf "%s.txt" taskName))
@@ -37,49 +38,55 @@ type Program () =
                     if typeof<IAdventOfCodeTask<int64>>.IsAssignableFrom taskType then
                         let task = x :?> IAdventOfCodeTask<int64>
                         let answer = task.Solve(input)
-                        [| taskName; answer |> fst |> string; answer |> snd |> string |]
+                        [ answer |> fst |> string; answer |> snd |> string ]
                     elif typeof<IAdventOfCodeTask<int64, string>>.IsAssignableFrom taskType then
                         let task = x :?> IAdventOfCodeTask<int64, string>
                         let answer = task.Solve(input)
-                        [| taskName; answer |> fst |> string; answer |> snd |]
+                        [ answer |> fst |> string; answer |> snd ]
                     elif typeof<IAdventOfCodeTask<string>>.IsAssignableFrom taskType then
                         let task = x :?> IAdventOfCodeTask<string>
                         let answer = task.Solve(input)
-                        [| taskName; answer |> fst; answer |> snd |]
+                        [ answer |> fst; answer |> snd ]
                     else
-                        raise <| new InvalidOperationException()
+                        raise <| new InvalidOperationException(taskType.Name + " has unknown type parameters in its interface")
                 sw.Stop()
-                [| (sw.ElapsedMilliseconds |> string) + " ms"|] |> Array.append result
+                (taskName :: result @ [ (sw.ElapsedMilliseconds |> string) + " ms" ], sw.ElapsedMilliseconds)
             )
-            |> Array.map (fun a ->
-                a |> Array.map (fun v -> v.Split("\n"))
+
+        let totalTime = results |> List.map snd |> List.sum
+
+        let answers =
+            [([ "Total"; ""; ""; (totalTime |> string) + " ms" ], 0L)]
+            |> List.append results
+            |> List.map (fun a ->
+                a |> fst |> List.map (fun v -> v.Split("\n") |> Array.toList)
             )
 
         let columnSizes =
-            [| 0..3 |]
-            |> Array.map(fun index ->
+            [ 0..3 ]
+            |> List.map(fun index ->
                 answers
-                |> Array.map(fun row ->
+                |> List.map(fun row ->
                     row[index])
-                    |> Array.map (fun f ->
-                        f |> Array.map String.length |> Array.max
+                    |> List.map (fun f ->
+                        f |> List.map String.length |> List.max
                     )
-                    |> Array.max
+                    |> List.max
                 )
 
         for row in answers do
-            let lines = row |> Array.map Array.length |> Array.max
+            let lines = row |> List.map List.length |> List.max
             for line in { 1..lines } do
                 for column in { 0..3 } do
                     let size = columnSizes[column]
                     let value = row[column]
-                    if Array.length value < line then
+                    if List.length value < line then
                         for _ in { 1..size } do printf " "
                     else
                         let p = value[line - 1]
                         for _ in { 1..size - String.length p } do printf " "
                         writeColor (sprintf "%s" p) column
-                    printf "  |  "
+                    printf " | "
                 printfn ""
 
         0
