@@ -16,6 +16,7 @@
     <Compile Include="Task20221208.fs" />
     <Compile Include="Task20221209.fs" />
     <Compile Include="Task20221210.fs" />
+    <Compile Include="Task20221211.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
