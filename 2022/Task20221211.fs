@@ -27,13 +27,13 @@ type Task20221211 () =
                     | "*" -> Some((*))
                     | "+" -> Some((+))
                     | _ -> raise <| new InvalidOperationException()
-                let (|ParseRegex|_|) regex str =
-                    let m = Regex(regex).Match(str)
-                    if m.Success then Some (List.tail [ for x in m.Groups -> x.Value ]) else None
                 let (|Parameter|_|) str =
                     match str with
                     | "old" -> Some(fun v -> v)
                     | p -> Some(fun _ -> p |> uint64)
+                let (|ParseRegex|_|) regex str =
+                    let m = Regex(regex).Match(str)
+                    if m.Success then Some (List.tail [ for x in m.Groups -> x.Value ]) else None
 
                 let parseRow (target:MonkeyState) row =
                     match row with
