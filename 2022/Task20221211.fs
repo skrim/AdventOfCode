@@ -29,8 +29,10 @@ type Task20221211 () =
                     | _ -> raise <| new InvalidOperationException()
                 let (|Parameter|_|) str =
                     match str with
-                    | "old" -> Some(fun v -> v)
-                    | p -> Some(fun _ -> p |> uint64)
+                    | "old" -> Some(id)
+                    | p ->
+                        let v = p |> uint64
+                        Some(fun _ -> v)
                 let (|ParseRegex|_|) regex str =
                     let m = Regex(regex).Match(str)
                     if m.Success then Some (List.tail [ for x in m.Groups -> x.Value ]) else None
@@ -63,19 +65,19 @@ type Task20221211 () =
                 |> List.fold (fun (newState:MonkeyState list) currentMonkeyIndex ->
                     let currentMonkey = newState[currentMonkeyIndex]
 
-                        currentMonkey.items
-                        |> List.fold (fun stateAfterItem item ->
+                    currentMonkey.items
+                    |> List.fold (fun stateAfterItem item ->
                         let worryLevel = ((currentMonkey.operation item) / divisor) % productOfDivisors
-                            let target = if worryLevel % currentMonkey.divisor = 0UL then currentMonkey.successTarget else currentMonkey.failTarget
+                        let target = if worryLevel % currentMonkey.divisor = 0UL then currentMonkey.successTarget else currentMonkey.failTarget
 
-                            stateAfterItem
-                            |> List.mapi (fun targetIndex otherMonkey ->
-                                match targetIndex with
-                                | t when t = target -> { otherMonkey with items = worryLevel :: otherMonkey.items }
-                                | t when t = currentMonkeyIndex -> { otherMonkey with items = List.empty; inspections = otherMonkey.inspections + 1UL }
-                                | _ -> otherMonkey
-                            )
-                        ) newState
+                        stateAfterItem
+                        |> List.mapi (fun targetIndex otherMonkey ->
+                            match targetIndex with
+                            | t when t = target -> { otherMonkey with items = worryLevel :: otherMonkey.items }
+                            | t when t = currentMonkeyIndex -> { otherMonkey with items = List.empty; inspections = otherMonkey.inspections + 1UL }
+                            | _ -> otherMonkey
+                        )
+                    ) newState
                 ) currentState
 
             let finalState1 = { 1..20 } |> Seq.fold (fun s _ -> runStep s 3UL) initialState
