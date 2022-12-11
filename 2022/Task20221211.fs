@@ -17,7 +17,7 @@ type Task20221211 () =
     interface IAdventOfCodeTask<int64> with
         override x.Solve(input) =
 
-            let defaultMonkeyState = { items = List.empty; operation = (fun v -> v); divisor = 1UL; successTarget = -1; failTarget= -1; inspections = 0UL }
+            let defaultMonkeyState = { items = List.empty; operation = id; divisor = 1UL; successTarget = -1; failTarget= -1; inspections = 0UL }
 
             let initialState =
                 let (|Int32|_|) str = Some(int32 <| str)
@@ -45,7 +45,7 @@ type Task20221211 () =
                     | ParseRegex "^\\s*Test: divisible by (\\d+)$" [Int32 d] -> { target with divisor = uint64 <| d }
                     | ParseRegex "^\\s*If true: throw to monkey (\\d+)$" [Int32 m] -> { target with successTarget = m }
                     | ParseRegex "^\\s*If false: throw to monkey (\\d+)$" [Int32 m] -> { target with failTarget = m }
-                    | _ -> raise <| new InvalidOperationException("Cannot parse '" + row + "'")
+                    | _ -> raise <| new InvalidOperationException(sprintf "Cannot parse '%s'" row)
 
                 input
                 |> Seq.fold(fun state value ->
@@ -56,17 +56,16 @@ type Task20221211 () =
                 ) [ defaultMonkeyState ]
                 |> List.rev
 
-            let multiplicationOfDivisors = initialState |> List.map (fun m -> m.divisor) |> List.fold (*) 1UL
+            let productOfDivisors = initialState |> List.map (fun m -> m.divisor) |> List.fold (*) 1UL
 
             let runStep currentState (divisor:uint64) =
                 [ 0 .. List.length currentState - 1 ]
-                |> List.fold (fun (newState:List<MonkeyState>) currentMonkeyIndex ->
+                |> List.fold (fun (newState:MonkeyState list) currentMonkeyIndex ->
                     let currentMonkey = newState[currentMonkeyIndex]
 
-                    let stateAfterItems =
                         currentMonkey.items
                         |> List.fold (fun stateAfterItem item ->
-                            let worryLevel = ((currentMonkey.operation item) / divisor) % multiplicationOfDivisors
+                        let worryLevel = ((currentMonkey.operation item) / divisor) % productOfDivisors
                             let target = if worryLevel % currentMonkey.divisor = 0UL then currentMonkey.successTarget else currentMonkey.failTarget
 
                             stateAfterItem
@@ -76,9 +75,7 @@ type Task20221211 () =
                                 | t when t = currentMonkeyIndex -> { otherMonkey with items = List.empty; inspections = otherMonkey.inspections + 1UL }
                                 | _ -> otherMonkey
                             )
-
                         ) newState
-                    stateAfterItems
                 ) currentState
 
             let finalState1 = { 1..20 } |> Seq.fold (fun s _ -> runStep s 3UL) initialState
@@ -87,7 +84,7 @@ type Task20221211 () =
             let result state =
                 state
                 |> List.map (fun m -> m.inspections)
-                |> List.sortByDescending (fun v -> v)
+                |> List.sortByDescending id
                 |> List.take 2
                 |> List.fold (*) 1UL
                 |> int64
