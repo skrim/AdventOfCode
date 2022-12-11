@@ -37,14 +37,14 @@ type Task20221211 () =
 
                 let parseRow (target:MonkeyState) row =
                     match row with
-                    | ParseRegex "Monkey \d+:" [] -> target
-                    | ParseRegex "Starting items: ((?:\d+)(?:,\s\d+)*)$" [UInt64List values] ->
+                    | ParseRegex "^Monkey \\d+:$" [] -> target
+                    | ParseRegex "^\\s*Starting items: ((?:\\d+)(?:,\\s\\d+)*)$" [UInt64List values] ->
                         { target with items = values }
-                    | ParseRegex "Operation: new = (old|\d+) (\+|\*) (old|\d+)" [Parameter p1; Operator op; Parameter p2] ->
+                    | ParseRegex "^\\s*Operation: new = (old|\\d+) (\\+|\\*) (old|\\d+)$" [Parameter p1; Operator op; Parameter p2] ->
                         { target with operation = fun v -> op (p1 v) (p2 v) }
-                    | ParseRegex "Test: divisible by (\d+)" [Int32 d] -> { target with divisor = uint64 <| d }
-                    | ParseRegex "If true: throw to monkey (\d+)" [Int32 m] -> { target with successTarget = m }
-                    | ParseRegex "If false: throw to monkey (\d+)" [Int32 m] -> { target with failTarget = m }
+                    | ParseRegex "^\\s*Test: divisible by (\\d+)$" [Int32 d] -> { target with divisor = uint64 <| d }
+                    | ParseRegex "^\\s*If true: throw to monkey (\\d+)$" [Int32 m] -> { target with successTarget = m }
+                    | ParseRegex "^\\s*If false: throw to monkey (\\d+)$" [Int32 m] -> { target with failTarget = m }
                     | _ -> raise <| new InvalidOperationException("Cannot parse '" + row + "'")
 
                 input
