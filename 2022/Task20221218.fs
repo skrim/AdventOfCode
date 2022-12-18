@@ -22,15 +22,15 @@ type Task20221218 () =
 
             let neighbors cube = [ (1, 0, 0); (-1, 0, 0); (0, 1, 0); (0, -1, 0); (0, 0, 1); (0, 0, -1) ] |> List.map (fun n -> add cube n)
 
-            let calculateArea cubeSet =
-                let calculateArea cube =
+            let calculateSurface cubeSet =
+                let calculateForCube cube =
                     neighbors cube
                     |> List.filter(fun neighbor -> not(cubeSet |> Set.contains neighbor))
                     |> List.length
 
-                cubeSet |> Set.toList |> List.map calculateArea |> List.sum |> int64
+                cubeSet |> Set.toList |> List.map calculateForCube |> List.sum |> int64
 
-            let fillCavities (w:sbyte list) =
+            let fillCavities cubes =
                 let continueFill coords (world:sbyte list) =
                     match coords with
                     | x, y, z when x < 0 || y < 0 || z < 0 || x >= maxX || y >= maxY || z >= maxZ -> false
@@ -45,6 +45,8 @@ type Task20221218 () =
                     let (newWorld, todo) = cube |> neighbors |> List.fold updateNeighbors (world, List.empty)
                     todo |> List.fold(fun state value -> floodFillStep value state) newWorld
 
+                let w = Array.create (maxX * maxY * maxZ) 0y |> Array.toList
+
                 cubes
                 |> Set.fold(fun state coords -> setNode coords 2y state) w
                 |> floodFillStep (0, 0, 0)
@@ -55,6 +57,4 @@ type Task20221218 () =
                 ) (0, Set.empty)
                 |> snd
 
-            let emptyWorld = Array.create (maxX * maxY * maxZ) 0y |> Array.toList
-
-            (cubes |> calculateArea, emptyWorld |> fillCavities |> calculateArea)
+            (cubes |> calculateSurface, cubes |> fillCavities |> calculateSurface)
