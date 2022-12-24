@@ -18,11 +18,17 @@ type Program () =
             printf "%s" text
             Console.ResetColor()
 
+        let argFilter =
+            match args |> Array.length with
+            | 1 -> (fun (t:Type) -> t.Name.Contains(args[0]))
+            | _ -> fun _ -> true
+
         let types =
             Assembly.GetCallingAssembly().GetTypes()
             |> Array.toList
             |> List.filter (fun t -> typedefof<IAdventOfCodeTask>.IsAssignableFrom t)
             |> List.filter (fun t -> not t.IsInterface)
+            |> List.filter argFilter
             |> List.sortBy (fun t -> t.Name)
 
         printfn "Solving %d tasks..." (List.length types)
@@ -32,7 +38,9 @@ type Program () =
             |> List.map (fun x ->
                 let taskType = x.GetType()
                 let taskName = taskType.Name
-                let input = System.IO.File.ReadAllLines(Path.Join("data", sprintf "%s.txt" taskName))
+                let fileName = Path.Join("data", sprintf "%s.txt" taskName)
+                if not (File.Exists fileName) then File.WriteAllText(fileName, "")
+                let input = System.IO.File.ReadAllLines(fileName)
                 let sw = Stopwatch.StartNew()
                 let result =
                     if typeof<IAdventOfCodeTask<int64>>.IsAssignableFrom taskType then

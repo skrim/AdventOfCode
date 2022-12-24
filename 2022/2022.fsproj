@@ -17,6 +17,18 @@
     <Compile Include="Task20221209.fs" />
     <Compile Include="Task20221210.fs" />
     <Compile Include="Task20221211.fs" />
+    <Compile Include="Task20221212.fs" />
+    <Compile Include="Task20221213.fs" />
+    <Compile Include="Task20221214.fs" />
+    <Compile Include="Task20221215.fs" />
+    <Compile Include="Task20221216.fs" />
+    <Compile Include="Task20221217.fs" />
+    <Compile Include="Task20221218.fs" />
+    <Compile Include="Task20221219.fs" />
+    <Compile Include="Task20221220.fs" />
+    <Compile Include="Task20221221.fs" />
+    <Compile Include="Task20221222.fs" />
+    <Compile Include="Task20221223.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 </Project>
