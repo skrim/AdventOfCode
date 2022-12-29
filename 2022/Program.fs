@@ -31,11 +31,10 @@ type Program () =
             |> List.filter argFilter
             |> List.sortBy (fun t -> t.Name)
 
-        printfn "Solving %d tasks..." (List.length types)
-
         let results =
             getInstances types
-            |> List.map (fun x ->
+            |> List.mapi (fun i x ->
+                printfn "Solved %d / %d tasks..." i (List.length types)
                 let taskType = x.GetType()
                 let taskName = taskType.Name
                 let fileName = Path.Join("data", sprintf "%s.txt" taskName)

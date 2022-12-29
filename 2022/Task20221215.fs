@@ -19,8 +19,6 @@ type Task20221215 () =
                 |> Seq.map(fun s -> (s[0], s[1], Math.Abs(s[0] - s[2]) + Math.Abs(s[1] - s[3])))
                 |> Seq.toList
 
-            let minManhattanDistance = sensorsAndBeacons |> List.map (fun (_, _, md) -> md) |> List.min
-
             let xRange y (sx:int64, sy:int64, md:int64) =
                 let yd = md - Math.Abs(sy - y)
                 (sx - yd, sx + yd)
@@ -64,24 +62,20 @@ type Task20221215 () =
                     let filled = mergedRanges |> List.map cull |> List.map (fun (a, b) -> b - a) |> List.sum
                     (minOverlap, filled)
 
-                let rec findStep p =
+                let rec findStep p maxSkip =
                     let (minOverlap, filled) = calculate p
 
                     match filled with
                     | _ when filled = areaSize - 2L -> p
-                    | _ when p >= areaSize - 1L -> raise <| new InvalidOperationException()
-                    | _ when minOverlap <= 1L && (calculate (p + minManhattanDistance) |> fst) = minOverlap -> findStep (p + minManhattanDistance)
-                    | _ when minOverlap > 1L -> findStep (p + minOverlap / 2L)
-                    | _ -> findStep (p + 1L)
+                    | _ when p >= areaSize - 1L && maxSkip > 1L -> findStep 0L (maxSkip / 10L)
+                    | _ when p >= areaSize -> raise <| new InvalidOperationException()
+                    | _ when minOverlap <= 1L && (calculate (p + maxSkip) |> fst) = minOverlap -> findStep (p + maxSkip) maxSkip
+                    | _ when minOverlap > 1L -> findStep (p + minOverlap / 2L) maxSkip
+                    | _ -> findStep (p + 1L) maxSkip
 
-                findStep 0L
+                findStep 0L 1000L
 
             let part1 = yPos |> ranges xRange |> List.fold mergeToList List.empty |> List.map (fun (a, b) -> b - a) |> List.sum
+            let xp, yp = find yRange, find xRange
 
-            // 3299359 3355220
-            let yp = find xRange
-            let xp = find yRange
-            printfn "%d %d" xp yp
-            let part2 = xp * 4000000L + yp
-
-            (part1, part2)
+            (part1, xp * 4000000L + yp)
