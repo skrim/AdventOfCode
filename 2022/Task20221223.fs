@@ -11,73 +11,87 @@ type Task20221223 () =
                         line
                         |> Seq.fold (fun (x, state) tile ->
                             match tile with
-                            | '#' -> (x + 1, state |> Set.add (x, y))
+                            | '#' -> (x + 1, (x, y) :: state)
                             | _ -> (x + 1, state)
                         ) (0, state)
                     (y + 1, snd lineResult)
-                ) (0, Set.empty)
+                ) (0, List.empty)
                 |> snd
 
-            let allLookups = [
-                    [ (0, -1); (-1, -1); (1, -1) ];
-                    [ (0, 1); (-1, 1); (1, 1) ];
-                    [ (-1, 0); (-1, -1); (-1, 1) ];
-                    [ (1, 0); (1, -1); (1, 1) ]
-                ]
+            let directionLookups = [
+                ( 0, -1, 32uy + 64uy + 128uy );
+                ( 0, 1, 2uy + 4uy + 8uy);
+                ( -1, 0, 8uy + 16uy + 32uy);
+                ( 1, 0, 128uy + 1uy + 2uy)
+            ]
 
-            let allNeighbors = allLookups |> List.concat |> List.distinct
-
-            let getBounds state = (
-                    state |> Set.map fst |> Set.minElement, state |> Set.map snd |> Set.minElement,
-                    state |> Set.map fst |> Set.maxElement, state |> Set.map snd |> Set.maxElement
+            let getBounds state =
+                let xSet, ySet = state |> List.map fst, state |> List.map snd
+                (
+                    xSet |> List.min, ySet |> List.min,
+                    xSet |> List.max, ySet |> List.max
                 ) //minX, minY, maxX, maxY
 
-            let move step state =
-                let shift = allLookups |> List.take (step % 4)
-                let currentLookups = (allLookups |> List.skip (step % 4)) @ shift
+            let move step (state:(int*int) list) =
+                let minX, minY, maxX, maxY = getBounds state
+                let w = maxX - minX + 3
+                let h = maxY - minY + 3
+                let toIndex (x, y) = (x + 1 - minX) + (y + 1 - minY) * w
+                let lookup = state |> List.fold(fun state pos -> state |> Array.updateAt (toIndex pos) 1uy) (Array.create (w * h) 0uy)
 
-                let hasNeighbor (cx, cy) neighbors = neighbors |> List.tryFind(fun (dx, dy) -> state |> Set.contains (cx + dx, cy + dy)) <> None
+                let shift = directionLookups |> List.take (step % 4)
+                let currentLookups = (directionLookups |> List.skip (step % 4)) @ shift
 
-                let rec findDirection (x, y) = function
-                    | l::t when hasNeighbor (x, y) l -> findDirection (x, y) t
-                    | ((mx, my) :: _) :: _ -> ((x, y), (x + mx, y + my))
+                let findNeighbors (cx, cy) =
+                    (lookup[toIndex (cx + 1, cy    )] <<< 0) |||
+                    (lookup[toIndex (cx + 1, cy + 1)] <<< 1) |||
+                    (lookup[toIndex (cx    , cy + 1)] <<< 2) |||
+                    (lookup[toIndex (cx - 1, cy + 1)] <<< 3) |||
+                    (lookup[toIndex (cx - 1, cy    )] <<< 4) |||
+                    (lookup[toIndex (cx - 1, cy - 1)] <<< 5) |||
+                    (lookup[toIndex (cx    , cy - 1)] <<< 6) |||
+                    (lookup[toIndex (cx + 1, cy - 1)] <<< 7)
+
+                let rec findDirection (x, y) neighbors = function
+                    | (dx, dy, mask) :: _ when neighbors &&& mask = 0uy -> ((x, y), (x + dx, y + dy))
+                    | _::t -> findDirection (x, y) neighbors t
                     | _ -> ((x, y), (x, y))
 
                 let nextPosition pos =
-                    match hasNeighbor pos allNeighbors with
-                    | false -> (pos, pos)
-                    | true -> findDirection pos currentLookups
+                    match findNeighbors pos with
+                    | 0uy -> (pos, pos)
+                    | v -> findDirection pos v currentLookups
 
-                let nextPositions = state |> Set.map nextPosition
+                let nextPositions = state |> List.map nextPosition
 
                 let conflicts =
                     nextPositions
-                    |> Set.toList
                     |> List.countBy snd
                     |> List.filter(fun (_, c) -> c >= 2)
                     |> List.map fst
                     |> Set.ofList
 
-                let nextState =
+                let (nextState, changed) =
                     nextPositions
-                    |> Set.map (fun (fromPosition, toPosition) ->
+                    |> List.fold (fun (ns, c) (fromPosition, toPosition) ->
                         match conflicts |> Set.contains toPosition with
-                        | true -> fromPosition
-                        | false -> toPosition
-                    )
+                        | true -> (fromPosition :: ns, c || fromPosition <> toPosition)
+                        | false -> (toPosition :: ns, c || fromPosition <> toPosition)
+                    ) (List.empty, false)
 
-                (state <> nextState, nextState)
+                (nextState, changed)
 
-            let finalState = { 0..9 } |> Seq.fold(fun state round -> move round state |> snd) initialState
-            let minX, minY, maxX, maxY = getBounds finalState
-            let part1 = (maxX - minX + 1) * (maxY - minY + 1) - (finalState |> Set.count)
+            let part1 =
+                let finalState = { 0..9 } |> Seq.fold(fun state round -> move round state |> fst) initialState
+                let minX, minY, maxX, maxY = getBounds finalState
+                (maxX - minX + 1) * (maxY - minY + 1) - (finalState |> List.length)
 
             let part2 =
                 (initialState, 0)
                 |> Seq.unfold(fun (state, round) ->
                     match move round state with
-                    | (false, _) -> None
-                    | (true, s) -> Some (round, (s, round + 1))
+                    | (_, false) -> None
+                    | (s, true) -> Some (round, (s, round + 1))
                 )
                 |> Seq.max
                 |> (+) 2
