@@ -2,9 +2,13 @@
 
 [Advent of Code](https://adventofcode.com/) participations
 
+## 2023
+
+[Zig](2023/src)!
+
 ## 2022
 
-It is all F#
+[It is all F#](2022)
 
 ## 2021
 
