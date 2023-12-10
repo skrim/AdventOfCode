@@ -1,44 +1,74 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const List = std.ArrayList;
-const Map = std.AutoHashMap;
-const StrMap = std.StringHashMap;
-const BitSet = std.DynamicBitSet;
 
 const util = @import("util.zig");
 const gpa = util.gpa;
+const print = std.debug.print;
+const parseInt = std.fmt.parseInt;
 
 const data = @embedFile("data/day04.txt");
 
-pub fn main() !void {}
+pub fn main() !void {
+    var part1: usize = 0;
+    var part2: usize = 0;
 
-// Useful stdlib functions
-const tokenizeAny = std.mem.tokenizeAny;
-const tokenizeSeq = std.mem.tokenizeSequence;
-const tokenizeSca = std.mem.tokenizeScalar;
-const splitAny = std.mem.splitAny;
-const splitSeq = std.mem.splitSequence;
-const splitSca = std.mem.splitScalar;
-const indexOf = std.mem.indexOfScalar;
-const indexOfAny = std.mem.indexOfAny;
-const indexOfStr = std.mem.indexOfPosLinear;
-const lastIndexOf = std.mem.lastIndexOfScalar;
-const lastIndexOfAny = std.mem.lastIndexOfAny;
-const lastIndexOfStr = std.mem.lastIndexOfLinear;
-const trim = std.mem.trim;
-const sliceMin = std.mem.min;
-const sliceMax = std.mem.max;
+    var lineCount: usize = 0;
 
-const parseInt = std.fmt.parseInt;
-const parseFloat = std.fmt.parseFloat;
+    var lineIterator = std.mem.tokenize(u8, data, "\r\n");
+    while (lineIterator.next()) |_|
+        lineCount += 1;
 
-const print = std.debug.print;
-const assert = std.debug.assert;
+    const copies = gpa.alloc(usize, lineCount) catch unreachable;
+    for (0..lineCount) |i|
+        copies[i] = 1;
 
-const sort = std.sort.block;
-const asc = std.sort.asc;
-const desc = std.sort.desc;
+    var lineIndex: usize = 0;
+    lineIterator = std.mem.tokenize(u8, data, "\r\n");
+    while (lineIterator.next()) |line| {
+        var winningNumbers = std.AutoHashMap(usize, usize).init(gpa);
 
-// Generated from template/template.zig.
-// Run `zig build generate` to update.
-// Only unmodified days will be updated.
+        var index: isize = 0;
+
+        var it2 = std.mem.tokenizeAny(u8, line, ":|");
+        while (it2.next()) |part| {
+            if (index == 1) {
+                var partIterator = std.mem.tokenize(u8, part, " ");
+                while (partIterator.next()) |number| {
+                    const n = parseInt(usize, number, 10) catch unreachable;
+                    winningNumbers.put(n, 0) catch unreachable;
+                }
+            }
+
+            if (index == 2) {
+                var score: usize = 0;
+                var hits: usize = 0;
+
+                var partIterator = std.mem.tokenize(u8, part, " ");
+                while (partIterator.next()) |number| {
+                    const n = parseInt(usize, number, 10) catch unreachable;
+                    if (winningNumbers.contains(n)) {
+                        if (score == 0)
+                            score = 1
+                        else
+                            score = score * 2;
+
+                        hits += 1;
+                    }
+                }
+                part1 += score;
+
+                for (lineIndex + 1..lineIndex + 1 + hits) |i|
+                    copies[i] += copies[lineIndex];
+            }
+
+            index += 1;
+        }
+        lineIndex += 1;
+    }
+
+    for (0..lineCount) |i|
+        part2 += copies[i];
+
+    print("Part 1: {d}\n", .{part1});
+    print("Part 2: {d}\n", .{part2});
+}
