@@ -1,44 +1,71 @@
 const std = @import("std");
-const Allocator = std.mem.Allocator;
 const List = std.ArrayList;
-const Map = std.AutoHashMap;
-const StrMap = std.StringHashMap;
-const BitSet = std.DynamicBitSet;
 
 const util = @import("util.zig");
 const gpa = util.gpa;
 
 const data = @embedFile("data/day06.txt");
-
-pub fn main() !void {}
-
-// Useful stdlib functions
-const tokenizeAny = std.mem.tokenizeAny;
-const tokenizeSeq = std.mem.tokenizeSequence;
-const tokenizeSca = std.mem.tokenizeScalar;
-const splitAny = std.mem.splitAny;
-const splitSeq = std.mem.splitSequence;
-const splitSca = std.mem.splitScalar;
-const indexOf = std.mem.indexOfScalar;
-const indexOfAny = std.mem.indexOfAny;
-const indexOfStr = std.mem.indexOfPosLinear;
-const lastIndexOf = std.mem.lastIndexOfScalar;
-const lastIndexOfAny = std.mem.lastIndexOfAny;
-const lastIndexOfStr = std.mem.lastIndexOfLinear;
-const trim = std.mem.trim;
-const sliceMin = std.mem.min;
-const sliceMax = std.mem.max;
-
-const parseInt = std.fmt.parseInt;
-const parseFloat = std.fmt.parseFloat;
-
 const print = std.debug.print;
-const assert = std.debug.assert;
 
-const sort = std.sort.block;
-const asc = std.sort.asc;
-const desc = std.sort.desc;
+fn calculateRange(time: f64, distance: f64) usize {
+    const sq = std.math.sqrt(time * time - 4.0 * distance);
+    const x1 = (time - sq) / 2.0;
+    const x2 = (time + sq) / 2.0;
 
-// Generated from template/template.zig.
-// Run `zig build generate` to update.
-// Only unmodified days will be updated.
+    var x1ceil = std.math.ceil(x1);
+    var x2floor = std.math.floor(x2);
+
+    if (x1ceil == x1)
+        x1ceil += 1.0;
+
+    if (x2floor == x2)
+        x2floor -= 1.0;
+
+    return @as(usize, @intFromFloat((x2floor - x1ceil + 1)));
+}
+
+pub fn main() !void {
+    var times = List(f64).init(gpa);
+    defer times.deinit();
+
+    var distances = List(f64).init(gpa);
+    defer distances.deinit();
+
+    var p2time: f64 = 0.0;
+    var p2distance: f64 = 0.0;
+
+    var firstLine = true;
+    var lineIterator = std.mem.tokenize(u8, data, "\r\n");
+    while (lineIterator.next()) |line| {
+        var valueIterator = std.mem.tokenize(u8, line, "Time: Distance:");
+
+        var combined: isize = 0;
+
+        while (valueIterator.next()) |value| {
+            const v = std.fmt.parseFloat(f64, value) catch unreachable;
+            if (firstLine)
+                times.append(v) catch unreachable
+            else
+                distances.append(v) catch unreachable;
+
+            for (value) |c|
+                combined = combined * 10 + c - '0';
+        }
+
+        if (firstLine)
+            p2time = @as(f64, @floatFromInt(combined))
+        else
+            p2distance = @as(f64, @floatFromInt(combined));
+
+        firstLine = false;
+    }
+
+    var part1: usize = 1;
+    for (times.items, distances.items) |time, distance|
+        part1 *= calculateRange(time, distance);
+
+    const part2 = calculateRange(p2time, p2distance);
+
+    print("Part 1: {d}\n", .{part1});
+    print("Part 2: {d}\n", .{part2});
+}
