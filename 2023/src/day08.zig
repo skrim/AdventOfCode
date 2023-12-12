@@ -36,7 +36,6 @@ fn getNextNode(current: usize, count: usize) usize {
 }
 
 pub fn main() !void {
-    var lineIterator = std.mem.tokenize(u8, data, "\r\n");
     var first = true;
 
     defer instructions.deinit();
@@ -48,6 +47,7 @@ pub fn main() !void {
     var cycleLengths = List(usize).init(gpa);
     defer cycleLengths.deinit();
 
+    var lineIterator = std.mem.tokenize(u8, data, "\r\n");
     while (lineIterator.next()) |line| {
         if (first) {
             for (line) |c| {

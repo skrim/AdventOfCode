@@ -7,89 +7,65 @@ const gpa = util.gpa;
 const data = @embedFile("data/day07.txt");
 const print = std.debug.print;
 
-const five_of_a_kind = 6;
-const four_of_a_kind = 5;
-const full_house = 4;
-const three_of_a_kind = 3;
-const two_pairs = 2;
-const one_pair = 1;
+const Match = struct {
+    counts: usize,
+    rank: usize,
 
-const Match = struct { jokerCount: usize, counts: usize, handType: usize };
+    fn isMatch(self: Match, counts: []usize) bool {
+        var matchCounts = self.counts;
+        for (counts) |c| {
+            if (matchCounts == 0)
+                return true;
+
+            if (c != matchCounts % 10)
+                return false;
+
+            matchCounts /= 10;
+        }
+        unreachable;
+    }
+};
 
 const matches = [_]Match{
-    Match{ .jokerCount = 5, .counts = 5, .handType = five_of_a_kind },
-    Match{ .jokerCount = 4, .counts = 14, .handType = five_of_a_kind },
-    Match{ .jokerCount = 3, .counts = 23, .handType = five_of_a_kind },
-    Match{ .jokerCount = 3, .counts = 113, .handType = four_of_a_kind },
-    Match{ .jokerCount = 2, .counts = 23, .handType = five_of_a_kind },
-    Match{ .jokerCount = 2, .counts = 122, .handType = four_of_a_kind },
-    Match{ .jokerCount = 2, .counts = 1112, .handType = three_of_a_kind },
-    Match{ .jokerCount = 1, .counts = 14, .handType = five_of_a_kind },
-    Match{ .jokerCount = 1, .counts = 113, .handType = four_of_a_kind },
-    Match{ .jokerCount = 1, .counts = 122, .handType = full_house },
-    Match{ .jokerCount = 1, .counts = 1112, .handType = three_of_a_kind },
-    Match{ .jokerCount = 1, .counts = 11111, .handType = one_pair },
-    Match{ .jokerCount = 0, .counts = 5, .handType = five_of_a_kind },
-    Match{ .jokerCount = 0, .counts = 14, .handType = four_of_a_kind },
-    Match{ .jokerCount = 0, .counts = 23, .handType = full_house },
-    Match{ .jokerCount = 0, .counts = 113, .handType = three_of_a_kind },
-    Match{ .jokerCount = 0, .counts = 122, .handType = two_pairs },
-    Match{ .jokerCount = 0, .counts = 1112, .handType = one_pair }
+    .{ .counts = 5, .rank = 6 },
+    .{ .counts = 14, .rank = 5 },
+    .{ .counts = 23, .rank = 4 },
+    .{ .counts = 113, .rank = 3 },
+    .{ .counts = 122, .rank = 2 },
+    .{ .counts = 1112, .rank = 1 },
+    .{ .counts = 11111, .rank = 0 }
 };
 
 const Hand = struct {
-    cards: [5]u8,
+    cards: [5]usize,
     bid: usize,
     score: usize,
 
-    pub fn calculateScore(cards: []u8) usize {
+    pub fn calculateScore(cards: []usize) usize {
         var counts = [15]usize{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        var maxCount: usize = 0;
-        for (cards) |card| {
+        for (cards) |card|
             counts[card] += 1;
-            maxCount = @max(maxCount, counts[card]);
-        }
 
         const jokerCount = counts[1];
+        counts[1] = 0;
 
         std.sort.heap(usize, &counts, {}, std.sort.desc(usize));
-
-        var handType: usize = 0;
+        counts[0] += jokerCount;
 
         for (matches) |match| {
-            if (jokerCount != match.jokerCount)
+            if (!match.isMatch(&counts))
                 continue;
 
-            var ok: bool = true;
-            var matchCounts = match.counts;
-            for (counts) |c| {
-                if (matchCounts == 0)
-                    break;
-
-                if (c != matchCounts % 10) {
-                    ok = false;
-                    break;
-                }
-
-                matchCounts /= 10;
-            }
-
-            if (ok) {
-                handType = match.handType;
-                break;
-            }
+            var score: usize = match.rank;
+            for (cards) |c|
+                score = score * 15 + c;
+            return score;
         }
-
-        return handType * 10000000000 +
-            @as(usize, @intCast(cards[0])) * 100000000 +
-            @as(usize, @intCast(cards[1])) * 1000000 +
-            @as(usize, @intCast(cards[2])) * 10000 +
-            @as(usize, @intCast(cards[3])) * 100 +
-            @as(usize, @intCast(cards[4]));
+        unreachable;
     }
 
-    pub fn parse(line: []const u8, jokerValue: u8) Hand {
-        var cards: [5]u8 = [_]u8{ 0, 0, 0, 0, 0 };
+    pub fn parse(line: []const u8, jValue: usize) Hand {
+        var cards: [5]usize = [_]usize{ 0, 0, 0, 0, 0 };
         var bid: usize = 0;
 
         var index: usize = 0;
@@ -99,7 +75,7 @@ const Hand = struct {
                 for (0..5) |i| {
                     cards[i] = switch (token[i]) {
                         'T' => 10,
-                        'J' => jokerValue,
+                        'J' => jValue,
                         'Q' => 12,
                         'K' => 13,
                         'A' => 14,
@@ -108,7 +84,6 @@ const Hand = struct {
                     };
                 }
             }
-
             if (index == 1)
                 bid = std.fmt.parseInt(usize, token, 10) catch unreachable;
 
@@ -124,13 +99,13 @@ const Hand = struct {
 };
 
 fn calculateWinnings(hands: *List(Hand)) usize {
-    const x = hands.toOwnedSlice() catch unreachable;
-    std.sort.heap(Hand, x, {}, Hand.compare);
+    const slice = hands.toOwnedSlice() catch unreachable;
+    std.sort.heap(Hand, slice, {}, Hand.compare);
 
     var result: usize = 0;
     var index: usize = 0;
 
-    for (x) |item| {
+    for (slice) |item| {
         index += 1;
         result += item.bid * index;
     }
